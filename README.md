@@ -9,5 +9,5 @@ npm install -g wordpress-xml-attachments-downloader
 
 ## Usage
 
-1. Run app by `wordpress-xml-attachments-downloader -x wp_export.xml`
+1. Run app by `wp-xml-attch-down -x wp_export.xml`
 2. Files are downloaded asynchronously to directory wp_files in directory where command has been executed.
