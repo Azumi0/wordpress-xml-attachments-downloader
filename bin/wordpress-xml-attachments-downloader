@@ -1,0 +1,66 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const jsonfile = require('jsonfile');
+const request = require('request');
+const url = require("url");
+const path = require("path");
+const program = require('commander');
+const parseString = require('xml2js').parseString;
+
+program
+    .version('1.0.0')
+    .option('-x, --xml [path]', 'XML wordpress export file to analyze')
+    .parse(process.argv);
+
+if (!program.xml) {
+    program.outputHelp();
+    process.exit();
+}
+
+const dir = `${process.cwd()}/wp_files`;
+
+if (!fs.existsSync(dir)){
+    fs.mkdirSync(dir);
+}
+
+fs.readFile(program.xml, 'utf8', function (err,jsonData) {
+    if (err) {
+        return console.log(err);
+    }
+
+    parseString(jsonData, function (err, result) {
+        if (err) {
+            return console.log(err);
+        }
+
+        const posts = result.rss.channel['0'].item;
+
+        Object.keys(posts).forEach((key) => {
+            if (posts[key]['wp:attachment_url']){
+                const postDir = `${dir}/${posts[key]['wp:post_id']}`;
+                if (!fs.existsSync(postDir)){
+                    fs.mkdirSync(postDir);
+                }
+                Object.keys(posts[key]['wp:attachment_url']).forEach((attachmentNo) => {
+                    const parsed = url.parse(posts[key]['wp:attachment_url'][attachmentNo]);
+                    const attachmentName = path.basename(parsed.pathname);
+                    if (!fs.existsSync(`${postDir}/${attachmentNo}`)){
+                        fs.mkdirSync(`${postDir}/${attachmentNo}`);
+                    }
+                    console.info(`Downloading ${attachmentName}`);
+                    const reqOpts = {
+                        method: 'GET',
+                        url: posts[key]['wp:attachment_url'][attachmentNo]
+                    };
+                    request(reqOpts, (reqErr) => {
+                        if (reqErr) {
+                            return console.log(reqErr);
+                        }
+                        console.info(`Downloaded ${attachmentName}`);
+                    }).pipe(fs.createWriteStream(`${postDir}/${attachmentNo}/${attachmentName}`));
+                });
+            }
+         });
+    });
+});

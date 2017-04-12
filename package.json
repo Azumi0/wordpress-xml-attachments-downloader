@@ -1,0 +1,26 @@
+{
+  "name": "wordpress-xml-attachments-downloader",
+  "version": "1.0.0",
+  "description": "ES6 cli tool to download post attachments from wordpress xml export file",
+  "main": "./bin/wordpress-xml-attachments-downloader",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Azumi0/wordpress-xml-attachments-downloader.git"
+  },
+  "keywords": [
+    "xml",
+    "wordpress",
+    "attachments",
+    "ES6",
+    "wordpress-xml-attachments-downloader"
+  ],
+  "author": "Przemysław Wrzeszcz <przemyslaw.wrzeszcz@gmail.com>",
+  "license": "Apache V2",
+  "homepage": "https://github.com/Azumi0/wordpress-xml-attachments-downloader",
+  "dependencies": {
+    "commander": "^2.9.0",
+    "jsonfile": "^2.4.0",
+    "request": "^2.81.0",
+    "xml2js": "^0.4.17"
+  }
+}
