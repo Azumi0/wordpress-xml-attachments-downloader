@@ -1,6 +1,6 @@
 {
   "name": "wordpress-xml-attachments-downloader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ES6 cli tool to download post attachments from wordpress xml export file",
   "bin": {
     "wp-xml-attch-down": "./bin/wordpress-xml-attachments-downloader"
