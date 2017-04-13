@@ -6,6 +6,8 @@ const request = require('request');
 const url = require("url");
 const path = require("path");
 const program = require('commander');
+const throttledQueue = require('throttled-queue');
+const colors = require('colors');
 const parseString = require('xml2js').parseString;
 
 program
@@ -18,6 +20,7 @@ if (!program.xml) {
     process.exit();
 }
 
+const throttle = throttledQueue(5, 1000);
 const dir = `${process.cwd()}/wp_files`;
 
 if (!fs.existsSync(dir)){
@@ -26,12 +29,12 @@ if (!fs.existsSync(dir)){
 
 fs.readFile(program.xml, 'utf8', function (err,jsonData) {
     if (err) {
-        return console.log(err);
+        return console.log(colors.red(err));
     }
 
-    parseString(jsonData, function (err, result) {
-        if (err) {
-            return console.log(err);
+    parseString(jsonData, function (parseErr, result) {
+        if (parseErr) {
+            return console.log(colors.red(parseErr));
         }
 
         const posts = result.rss.channel['0'].item;
@@ -48,17 +51,23 @@ fs.readFile(program.xml, 'utf8', function (err,jsonData) {
                     if (!fs.existsSync(`${postDir}/${attachmentNo}`)){
                         fs.mkdirSync(`${postDir}/${attachmentNo}`);
                     }
-                    console.info(`Downloading ${attachmentName}`);
-                    const reqOpts = {
-                        method: 'GET',
-                        url: posts[key]['wp:attachment_url'][attachmentNo]
-                    };
-                    request(reqOpts, (reqErr) => {
-                        if (reqErr) {
-                            return console.log(reqErr);
+                    throttle(() => {
+                        if (fs.existsSync(`${postDir}/${attachmentNo}/${attachmentName}`)) {
+                            console.log(colors.magenta(`Removing existing file ${postDir}/${attachmentNo}/${attachmentName}`));
+                            fs.unlinkSync(`${postDir}/${attachmentNo}/${attachmentName}`);
                         }
-                        console.info(`Downloaded ${attachmentName}`);
-                    }).pipe(fs.createWriteStream(`${postDir}/${attachmentNo}/${attachmentName}`));
+                        console.log(colors.yellow(`Downloading ${attachmentName}`));
+                        const reqOpts = {
+                            method: 'GET',
+                            url: posts[key]['wp:attachment_url'][attachmentNo]
+                        };
+                        request(reqOpts, (reqErr) => {
+                            if (reqErr) {
+                                return console.log(colors.red(reqErr));
+                            }
+                            console.log(colors.green(`Downloaded ${attachmentName}`));
+                        }).pipe(fs.createWriteStream(`${postDir}/${attachmentNo}/${attachmentName}`));
+                    });
                 });
             }
          });

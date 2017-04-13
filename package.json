@@ -21,9 +21,11 @@
   "license": "Apache V2",
   "homepage": "https://github.com/Azumi0/wordpress-xml-attachments-downloader",
   "dependencies": {
+    "colors": "^1.1.2",
     "commander": "^2.9.0",
     "jsonfile": "^2.4.0",
     "request": "^2.81.0",
+    "throttled-queue": "^1.0.4",
     "xml2js": "^0.4.17"
   }
 }
